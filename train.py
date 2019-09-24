@@ -34,6 +34,7 @@ parser.add_argument('--encoding', type=str, default='utf-8', help='Set the encod
 parser.add_argument('--batch_size', metavar='SIZE', type=int, default=1, help='Batch size')
 parser.add_argument('--learning_rate', metavar='LR', type=float, default=0.00002, help='Learning rate for Adam')
 parser.add_argument('--accumulate_gradients', metavar='N', type=int, default=1, help='Accumulate gradients across N minibatches.')
+parser.add_argument('--layers_to_train', default=436, help='Number of layers to train, set to <=336 for 774M model if getting OOM errors.')
 parser.add_argument('--memory_saving_gradients', default=False, action='store_true', help='Use gradient checkpointing to reduce vram usage.')
 parser.add_argument('--only_train_transformer_layers', default=False, action='store_true', help='Restrict training to the transformer blocks.')
 parser.add_argument('--optimizer', type=str, default='adam', help='Optimizer. <adam|sgd|adafactor>.')
@@ -117,7 +118,13 @@ def main():
             top_p=args.top_p)
 
         all_vars = [v for v in tf.trainable_variables() if 'model' in v.name]
-        train_vars = [v for v in all_vars if '/h' in v.name] if args.only_train_transformer_layers else all_vars
+
+        #this line is to hopefully reduce memory usage (found on Twitter: https://twitter.com/BasedBlue/status/1169601983046672385?s=20)
+        train_vars = all_vars[-layers_to_train:]
+        print("Training", layers_to_train, "raw layers out of", len(all_vars))
+
+        train_vars = [v for v in train_vars if '/h' in v.name] if args.only_train_transformer_layers else train_vars
+        print("Training", len(train_vars), "net layers out of", len(all_vars))
 
         if args.optimizer == 'adam':
             opt = tf.train.AdamOptimizer(learning_rate=args.learning_rate)
