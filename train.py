@@ -16,6 +16,8 @@ from load_dataset import load_dataset, Sampler
 from accumulate import AccumulatingOptimizer
 import memory_saving_gradients
 
+from tensor2tensor.utils.adafactor import AdafactorOptimizer
+
 CHECKPOINT_DIR = 'checkpoint'
 SAMPLE_DIR = 'samples'
 
@@ -80,7 +82,7 @@ def main():
         raise ValueError(
             "Can't get samples longer than window size: %s" % hparams.n_ctx)
 
-    if args.model_name == '345M':
+    if args.model_name == '774M':
         args.memory_saving_gradients = True
         if args.optimizer == 'adam':
             args.only_train_transformer_layers = True
@@ -121,6 +123,8 @@ def main():
             opt = tf.train.AdamOptimizer(learning_rate=args.learning_rate)
         elif args.optimizer == 'sgd':
             opt = tf.train.GradientDescentOptimizer(learning_rate=args.learning_rate)
+        elif optimizer == 'adafactor':
+            opt = AdafactorOptimizer(learning_rate=learning_rate)
         else:
             exit('Bad optimizer:', args.optimizer)
 
