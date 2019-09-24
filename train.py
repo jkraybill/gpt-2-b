@@ -100,15 +100,6 @@ def main():
             tf.nn.sparse_softmax_cross_entropy_with_logits(
                 labels=context[:, 1:], logits=output['logits'][:, :-1]))
 
-        if args.val_every > 0:
-            val_context = tf.placeholder(tf.int32, [args.val_batch_size, None])
-            val_output = model.model(hparams=hparams, X=val_context)
-            val_loss = tf.reduce_mean(
-                tf.nn.sparse_softmax_cross_entropy_with_logits(
-                    labels=val_context[:, 1:], logits=val_output['logits'][:, :-1]))
-            val_loss_summary = tf.summary.scalar('val_loss', val_loss)
-
-
         tf_sample = sample.sample_sequence(
             hparams=hparams,
             length=args.sample_length,
@@ -243,22 +234,6 @@ def main():
                     os.path.join(SAMPLE_DIR, args.run_name,
                                  'samples-{}').format(counter), 'w', encoding=args.encoding) as fp:
                 fp.write('\n'.join(all_text))
-
-        def validation():
-            print('Calculating validation loss...')
-            losses = []
-            for batch in tqdm.tqdm(val_batches):
-                losses.append(sess.run(val_loss, feed_dict={val_context: batch}))
-            v_val_loss = np.mean(losses)
-            v_summary = sess.run(val_loss_summary, feed_dict={val_loss: v_val_loss})
-            summary_log.add_summary(v_summary, counter)
-            summary_log.flush()
-            print(
-                '[{counter} | {time:2.2f}] validation loss = {loss:2.2f}'
-                .format(
-                    counter=counter,
-                    time=time.time() - start_time,
-                    loss=v_val_loss))
 
         def sample_batch():
             return [data_sampler.sample(1024) for _ in range(args.batch_size)]
