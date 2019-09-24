@@ -265,6 +265,7 @@ def main():
 
 
         avg_loss = (0.0, 0.0)
+        bval_loss = (0.0, 0.0)
         start_time = time.time()
         best_val_loss = 99
         missed_val_checkpoints = 0
@@ -301,8 +302,8 @@ def main():
                 if args.val_every > 0 and counter % args.val_every == 0:
                     valbatch = [val_data_sampler.sample(1024) for _ in range(args.batch_size)]
                     valacc = sess.run(loss, feed_dict={context: valbatch})
-                    val_loss = (val_loss[0] * 0.99 + valacc, val_loss[1] * 0.99 + 1.0)
-                    av_val_loss = val_loss[0] / val_loss[1]
+                    bval_loss = (bval_loss[0] * 0.99 + valacc, bval_loss[1] * 0.99 + 1.0)
+                    av_bval_loss = bval_loss[0] / bval_loss[1]
                     print(
                         '[{counter} | {time:2.2f}] VAL_loss={loss:2.4f} VAL_avg={avg:2.4f} best={best:2.4f}'
                         .format(
