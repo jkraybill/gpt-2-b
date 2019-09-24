@@ -163,7 +163,7 @@ def model(hparams, X, past=None, scope='model', reuse=tf.AUTO_REUSE):
         for layer, past in enumerate(pasts):
             h, present = block(h, 'h%d' % layer, past=past, hparams=hparams)
             print(layer, "of", len(pasts))
-            if layer % 5 == 0:
+            if layer % 12 == 0:
                 tf.add_to_collection('checkpoints', h)
             presents.append(present)
         results['present'] = tf.stack(presents, axis=1)
