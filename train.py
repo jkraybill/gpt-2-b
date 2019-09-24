@@ -131,7 +131,7 @@ def main():
             opt = tf.train.AdamOptimizer(learning_rate=args.learning_rate)
         elif args.optimizer == 'sgd':
             opt = tf.train.GradientDescentOptimizer(learning_rate=args.learning_rate)
-        elif optimizer == 'adafactor':
+        elif args.optimizer == 'adafactor':
             opt = AdafactorOptimizer(learning_rate=learning_rate)
         else:
             exit('Bad optimizer:', args.optimizer)
