@@ -303,7 +303,7 @@ def main():
                     valbatch = [val_data_sampler.sample(1024) for _ in range(args.batch_size)]
                     valacc = sess.run(loss, feed_dict={context: valbatch})
                     bval_loss = (bval_loss[0] * 0.99 + valacc, bval_loss[1] * 0.99 + 1.0)
-                    av_bval_loss = bval_loss[0] / bval_loss[1]
+                    av_val_loss = bval_loss[0] / bval_loss[1]
                     print(
                         '[{counter} | {time:2.2f}] VAL_loss={loss:2.4f} VAL_avg={avg:2.4f} best={best:2.4f}'
                         .format(
