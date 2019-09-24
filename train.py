@@ -120,7 +120,7 @@ def main():
         all_vars = [v for v in tf.trainable_variables() if 'model' in v.name]
 
         #this line is to hopefully reduce memory usage (found on Twitter: https://twitter.com/BasedBlue/status/1169601983046672385?s=20)
-        train_vars = all_vars[-args.layers_to_train:]
+        train_vars = all_vars[-1 * args.layers_to_train:]
         print("Training", args.layers_to_train, "raw layers out of", len(all_vars))
 
         train_vars = [v for v in train_vars if '/h' in v.name] if args.only_train_transformer_layers else train_vars
