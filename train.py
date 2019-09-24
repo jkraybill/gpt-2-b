@@ -299,7 +299,7 @@ def main():
                         avg=avg_loss[0] / avg_loss[1]))
 
                 if args.val_every > 0 and counter % args.val_every == 0:
-                    valbatch = [val_data_sampler.sample(batch_length) for _ in range(args.batch_size)]
+                    valbatch = [val_data_sampler.sample(1024) for _ in range(args.batch_size)]
                     valacc = sess.run(loss, feed_dict={context: valbatch})
                     val_loss = (val_loss[0] * 0.99 + valacc, val_loss[1] * 0.99 + 1.0)
                     av_val_loss = val_loss[0] / val_loss[1]
