@@ -54,7 +54,7 @@ parser.add_argument('--save_every', metavar='N', type=int, default=1000, help='W
 parser.add_argument('--val_dataset', metavar='PATH', type=str, default=None, help='Dataset for validation loss, defaults to --dataset.')
 parser.add_argument('--val_batch_size', metavar='SIZE', type=int, default=2, help='Batch size for validation.')
 parser.add_argument('--val_batch_count', metavar='N', type=int, default=40, help='Number of batches for validation.')
-parser.add_argument('--val_every', metavar='STEPS', type=int, default=0, help='Calculate validation loss every STEPS steps.')
+parser.add_argument('--val_every', metavar='STEPS', type=int, default=5, help='Calculate validation loss every STEPS steps.')
 
 
 def maketree(path):
@@ -298,7 +298,7 @@ def main():
                         loss=v_loss,
                         avg=avg_loss[0] / avg_loss[1]))
 
-                if counter % args.val_every == 0:
+                if args.val_every > 0 and counter % args.val_every == 0:
                     valbatch = [val_data_sampler.sample(batch_length) for _ in range(batch_size)]
                     valacc = sess.run(loss, feed_dict={context: valbatch})
                     val_loss = (val_loss[0] * 0.99 + valacc, val_loss[1] * 0.99 + 1.0)
