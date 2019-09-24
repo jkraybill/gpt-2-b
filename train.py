@@ -35,6 +35,7 @@ parser.add_argument('--batch_size', metavar='SIZE', type=int, default=1, help='B
 parser.add_argument('--learning_rate', metavar='LR', type=float, default=0.00002, help='Learning rate for Adam')
 parser.add_argument('--accumulate_gradients', metavar='N', type=int, default=1, help='Accumulate gradients across N minibatches.')
 parser.add_argument('--layers_to_train', type=int, default=436, help='Number of layers to train, set to <=336 for 774M model if getting OOM errors.')
+parser.add_argument('--stop_after', type=int, default=50000, help='Number of max iterations to run.')
 parser.add_argument('--memory_saving_gradients', default=False, action='store_true', help='Use gradient checkpointing to reduce vram usage.')
 parser.add_argument('--only_train_transformer_layers', default=False, action='store_true', help='Restrict training to the transformer blocks.')
 parser.add_argument('--optimizer', type=str, default='adam', help='Optimizer. <adam|sgd|adafactor>.')
@@ -265,15 +266,13 @@ def main():
 
         avg_loss = (0.0, 0.0)
         start_time = time.time()
+        best_val_loss = 99
+        missed_val_checkpoints = 0
 
         try:
-            while True:
-                if counter % args.save_every == 0:
-                    save()
+            while counter < args.stop_after:
                 if counter % args.sample_every == 0:
                     generate_samples()
-                if args.val_every > 0 and (counter % args.val_every == 0 or counter == 1):
-                    validation()
 
                 if args.accumulate_gradients > 1:
                     sess.run(opt_reset)
@@ -298,6 +297,29 @@ def main():
                         time=time.time() - start_time,
                         loss=v_loss,
                         avg=avg_loss[0] / avg_loss[1]))
+
+                if counter % args.val_every == 0:
+                    valbatch = [val_data_sampler.sample(batch_length) for _ in range(batch_size)]
+                    valacc = sess.run(loss, feed_dict={context: valbatch})
+                    val_loss = (val_loss[0] * 0.99 + valacc, val_loss[1] * 0.99 + 1.0)
+                    av_val_loss = val_loss[0] / val_loss[1]
+                    print(
+                        '[{counter} | {time:2.2f}] VAL_loss={loss:2.4f} VAL_avg={avg:2.4f} best={best:2.4f}'
+                        .format(
+                            counter=counter,
+                            time=time.time() - start_time,
+                            loss=valacc,
+                            avg=av_val_loss,
+                            best=best_val_loss))
+                    if counter >= args.save_every and counter % args.save_every == 0: # check for validation checkpoints every save_every iterations.
+                        if av_val_loss < best_val_loss: # got a good one from validation, save a checkpoint (every save_every)
+                            save()
+                            best_val_loss = av_val_loss
+                            missed_val_checkpoints = 0
+                        else: # missed a validation checkpoint. tolerate like 10 of these.
+                            missed_val_checkpoints += 1
+                    if missed_val_checkpoints > 9: # missed too many save opportunities, stop training
+                        counter = stop_after + 1
 
                 counter += 1
         except KeyboardInterrupt:
