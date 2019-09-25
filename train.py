@@ -300,7 +300,7 @@ def main():
                 counter += 1
         except KeyboardInterrupt:
             print('interrupted')
-            save()
+            #save()
 
 
 if __name__ == '__main__':
