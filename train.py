@@ -296,6 +296,7 @@ def main():
                             missed_val_checkpoints += 1
                     if missed_val_checkpoints > 9: # missed too many save opportunities, stop training
                         counter = args.stop_after + 1
+                        print "stopping training due to val loss not improving."
 
                 counter += 1
         except KeyboardInterrupt:
