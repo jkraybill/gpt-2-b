@@ -150,8 +150,8 @@ def main():
         summary_lr = tf.summary.scalar('learning_rate', args.learning_rate)
         summaries = tf.summary.merge([summary_lr, summary_loss])
 
-        #summary_log = tf.summary.FileWriter(
-        #    os.path.join(CHECKPOINT_DIR, args.run_name))
+        summary_log = tf.summary.FileWriter(
+            os.path.join(CHECKPOINT_DIR, args.run_name))
 
         saver = tf.train.Saver(
             var_list=all_vars,
@@ -261,7 +261,7 @@ def main():
                         (opt_apply, loss, summaries),
                         feed_dict={context: sample_batch()})
 
-                #summary_log.add_summary(v_summary, counter)
+                summary_log.add_summary(v_summary, counter)
 
                 avg_loss = (avg_loss[0] * 0.99 + v_loss,
                             avg_loss[1] * 0.99 + 1.0)
