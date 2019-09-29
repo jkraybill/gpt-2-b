@@ -263,8 +263,8 @@ def main():
 
                 summary_log.add_summary(v_summary, counter)
 
-                avg_loss = (avg_loss[0] * 0.99 + v_loss,
-                            avg_loss[1] * 0.99 + 1.0)
+                avg_loss = (avg_loss[0] * 0.98 + v_loss,
+                            avg_loss[1] * 0.98 + 1.0)
 
                 print(
                     '[{counter} | {time:2.2f}] loss={loss:2.2f} avg={avg:2.2f}'
@@ -277,7 +277,7 @@ def main():
                 if args.val_every > 0 and counter % args.val_every == 0:
                     valbatch = [val_data_sampler.sample(1024) for _ in range(args.batch_size)]
                     valacc = sess.run(loss, feed_dict={context: valbatch})
-                    bval_loss = (bval_loss[0] * 0.99 + valacc, bval_loss[1] * 0.99 + 1.0)
+                    bval_loss = (bval_loss[0] * 0.9 + valacc, bval_loss[1] * 0.9 + 1.0)
                     av_val_loss = bval_loss[0] / bval_loss[1]
                     print(
                         '[{counter} | {time:2.2f}] VAL_loss={loss:2.4f} VAL_avg={avg:2.4f} best={best:2.4f}'
