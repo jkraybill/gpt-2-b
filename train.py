@@ -288,13 +288,14 @@ def main():
                             avg=av_val_loss,
                             best=best_val_loss))
                     if counter >= args.save_every and counter % args.save_every == 0: # check for validation checkpoints every save_every iterations.
-                        if av_val_loss < best_val_loss: # got a good one from validation, save a checkpoint (every save_every)
+                        if av_val_loss < best_val_loss and av_val_loss > avg_loss: # got a good one from validation, save a checkpoint (every save_every) -- but don't save before val loss goes above train loss
                             save()
                             best_val_loss = av_val_loss
                             missed_val_checkpoints = 0
                         else: # missed a validation checkpoint. tolerate like 10 of these.
-                            missed_val_checkpoints += 1
-                    if missed_val_checkpoints > 9: # missed too many save opportunities, stop training
+                            if av_val_loss > avg_loss: # don't count a missed checkpoint while val loss is under training loss
+                                missed_val_checkpoints += 1
+                    if missed_val_checkpoints > 19: # missed too many save opportunities, stop training
                         counter = args.stop_after + 1
                         print('stopping training due to val loss not improving.')
 
