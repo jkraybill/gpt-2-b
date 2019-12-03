@@ -279,6 +279,7 @@ def main():
                     valacc = sess.run(loss, feed_dict={context: valbatch})
                     bval_loss = (bval_loss[0] * 0.9 + valacc, bval_loss[1] * 0.9 + 1.0)
                     av_val_loss = bval_loss[0] / bval_loss[1]
+                    av_train_loss = avg_loss[0] / avg_loss[1]
                     print(
                         '[{counter} | {time:2.2f}] VAL_loss={loss:2.4f} VAL_avg={avg:2.4f} best={best:2.4f}'
                         .format(
@@ -288,12 +289,12 @@ def main():
                             avg=av_val_loss,
                             best=best_val_loss))
                     if counter >= args.save_every and counter % args.save_every == 0: # check for validation checkpoints every save_every iterations.
-                        if av_val_loss < best_val_loss and av_val_loss > avg_loss: # got a good one from validation, save a checkpoint (every save_every) -- but don't save before val loss goes above train loss
+                        if av_val_loss < best_val_loss and av_val_loss > av_train_loss: # got a good one from validation, save a checkpoint (every save_every) -- but don't save before val loss goes above train loss
                             save()
                             best_val_loss = av_val_loss
                             missed_val_checkpoints = 0
                         else: # missed a validation checkpoint. tolerate like 10 of these.
-                            if av_val_loss > avg_loss: # don't count a missed checkpoint while val loss is under training loss
+                            if av_val_loss > av_train_loss: # don't count a missed checkpoint while val loss is under training loss
                                 missed_val_checkpoints += 1
                     if missed_val_checkpoints > 19: # missed too many save opportunities, stop training
                         counter = args.stop_after + 1
