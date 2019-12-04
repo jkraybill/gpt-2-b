@@ -236,7 +236,9 @@ def main():
                 fp.write('\n'.join(all_text))
 
         def sample_batch():
-            return [data_sampler.sample(1024) for _ in range(args.batch_size)]
+            ret = [data_sampler.sample(1024) for _ in range(args.batch_size)]
+            print (enc.decode(ret[0]))
+            return ret
 
 
         avg_loss = (0.0, 0.0)
