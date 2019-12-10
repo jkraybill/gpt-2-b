@@ -237,7 +237,7 @@ def main():
 
         def sample_batch():
             ret = [data_sampler.sample(1024) for _ in range(args.batch_size)]
-            print (enc.decode(ret[0]))
+            # print (enc.decode(ret[0]))
             return ret
 
 
