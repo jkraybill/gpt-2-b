@@ -189,8 +189,6 @@ def main():
             # Sample from validation set once with fixed seed to make
             # it deterministic during training as well as across runs.
             val_data_sampler = Sampler(val_chunks, seed=1)
-            val_batches = [[val_data_sampler.sample(1024) for _ in range(args.val_batch_size)]
-                           for _ in range(args.val_batch_count)]
 
         counter = 1
         counter_path = os.path.join(CHECKPOINT_DIR, args.run_name, 'counter')
@@ -278,7 +276,11 @@ def main():
 
                 if args.val_every > 0 and counter % args.val_every == 0:
                     valbatch = [val_data_sampler.sample(1024) for _ in range(args.batch_size)]
-                    valacc = sess.run(loss, feed_dict={context: valbatch})
+                    valacc = 0;
+                    for _ in range(args.val_batch_count):
+                        valacc += sess.run(loss, feed_dict={context: valbatch})
+                    valacc = valacc / args.val_batch_count
+
                     bval_loss = (bval_loss[0] * 0.9 + valacc, bval_loss[1] * 0.9 + 1.0)
                     av_val_loss = bval_loss[0] / bval_loss[1]
                     av_train_loss = avg_loss[0] / avg_loss[1]
@@ -298,7 +300,7 @@ def main():
                         else: # missed a validation checkpoint. tolerate like 10 of these.
                             if av_val_loss > av_train_loss: # don't count a missed checkpoint while val loss is under training loss
                                 missed_val_checkpoints += 1
-                    if missed_val_checkpoints > 19: # missed too many save opportunities, stop training
+                    if missed_val_checkpoints > 199: # missed too many save opportunities, stop training
                         counter = args.stop_after + 1
                         print('stopping training due to val loss not improving.')
 
